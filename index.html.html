@@ -1,0 +1,439 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ZoeOS: Combining relative and metric depth</title>
+    <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0F0B96;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden; /* Prevent scrolling */
+            font-family: 'VT323', monospace;
+        }
+
+        .container {
+            text-align: center;
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            padding: 10px; /* Reduced padding */
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Ensure container takes full viewport height */
+        }
+
+        .title {
+            color: #ffffff;
+            font-size: 4vw; /* Reduced font size */
+            margin-bottom: 5px; /* Reduced margin */
+        }
+
+        .version {
+            color: #00FF00;
+            font-size: 2vw; /* Reduced font size */
+            margin-bottom: 20px; /* Increased margin to move it up */
+        }
+
+        .logo {
+            width: 20vw; /* Reduced logo size */
+            max-width: 150px; /* Reduced max size */
+            height: 20vw;
+            max-height: 150px;
+            margin-bottom: 10px; /* Adjusted margin */
+            border-radius: 50%;
+            border: 2px solid #fff;
+        }
+
+        .contract-address {
+            color: #ffffff;
+            font-size: 1.5vw; /* Smaller font size for contract address */
+            margin-bottom: 10px; /* Space below the contract address */
+        }
+
+        .contract-address a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .terminal {
+            background-color: #0F0B96;
+            padding: 1vw; /* Reduced padding */
+            color: #ffffff;
+            font-size: 2vw; /* Reduced font size */
+            text-align: left;
+            min-height: 15vh; /* Reduced height */
+            max-height: 20vh; /* Reduced max height */
+            width: 100%;
+            position: relative;
+            box-shadow: 0 0 10px rgba(0, 255, 0, 0.5);
+            overflow: hidden;
+            border: 2px solid #ffffff;
+        }
+
+        .terminal::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: repeating-linear-gradient(
+                0deg,
+                rgba(0, 0, 0, 0.15),
+                rgba(0, 0, 0, 0.15) 1px,
+                transparent 1px,
+                transparent 2px
+            );
+            pointer-events: none;
+        }
+
+        .terminal-text {
+            white-space: pre-wrap;
+            display: inline;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 0.8vw; /* Reduced cursor size */
+            height: 2vw;
+            max-width: 8px;
+            max-height: 16px;
+            background: #00FF00;
+            vertical-align: middle;
+            animation: blink 0.5s step-end infinite;
+        }
+
+        .logo-container {
+            display: flex;
+            justify-content: center;
+            gap: 1vw; /* Reduced gap */
+            margin-top: 10px; /* Reduced margin */
+            margin-bottom: 30px; /* Increased margin to separate from footer */
+            flex-wrap: wrap;
+        }
+
+        .logo-link {
+            text-decoration: none;
+            color: #ffffff;
+            font-size: 2vw; /* Reduced font size for minimalist look */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .logo-link img {
+            width: 4vw; /* Reduced size for logos */
+            max-width: 20px;
+            height: 4vw;
+            max-height: 20px;
+            object-fit: contain;
+        }
+
+        .footer {
+            position: relative;
+            width: 100%;
+            text-align: center;
+            color: #ffffff;
+            font-size: 1vw; /* Further reduced font size */
+            margin-top: 40px; /* Increased margin to move it further down */
+        }
+
+        /* Loading Screen Styles */
+        .loading-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0F0B96;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+            font-family: 'VT323', monospace;
+        }
+
+        .loading-text {
+            color: #ffffff;
+            font-size: 3vw; /* Reduced font size */
+            margin-bottom: 10px; /* Reduced margin */
+        }
+
+        .loading-bar {
+            width: 50%;
+            max-width: 300px; /* Reduced max width */
+            height: 15px; /* Reduced height */
+            border: 2px solid #ffffff;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .loading-progress {
+            width: 0;
+            height: 100%;
+            background: #00FF00;
+            animation: load 3s linear forwards;
+        }
+
+        /* Retro TV Effect */
+        .tv-effect {
+            animation: tv-on 0.5s ease-in forwards;
+            transform-origin: center;
+        }
+
+        @keyframes tv-on {
+            0% {
+                transform: scaleY(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scaleY(0.1);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scaleY(1);
+                opacity: 1;
+            }
+        }
+
+        @keyframes load {
+            0% {
+                width: 0;
+            }
+            100% {
+                width: 100%;
+            }
+        }
+
+        @keyframes blink {
+            50% {
+                opacity: 0;
+            }
+        }
+
+        /* Responsive Adjustments */
+        @media (max-width: 768px) {
+            .title {
+                font-size: 6vw;
+            }
+
+            .version {
+                font-size: 3vw;
+            }
+
+            .logo {
+                width: 25vw;
+                height: 25vw;
+                max-width: 120px;
+                max-height: 120px;
+            }
+
+            .contract-address {
+                font-size: 2vw;
+            }
+
+            .terminal {
+                font-size: 3vw;
+                min-height: 12vh;
+                max-height: 18vh;
+            }
+
+            .logo-link {
+                font-size: 3vw;
+            }
+
+            .logo-link img {
+                width: 5vw;
+                max-width: 18px;
+                height: 5vw;
+                max-height: 18px;
+            }
+
+            .footer {
+                font-size: 1.5vw;
+                margin-top: 30px;
+            }
+
+            .loading-text {
+                font-size: 4vw;
+            }
+
+            .loading-bar {
+                width: 70%;
+                height: 12px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .title {
+                font-size: 8vw;
+            }
+
+            .version {
+                font-size: 4vw;
+            }
+
+            .logo {
+                width: 30vw;
+                height: 30vw;
+                max-width: 100px;
+                max-height: 100px;
+            }
+
+            .contract-address {
+                font-size: 3vw;
+            }
+
+            .terminal {
+                font-size: 4vw;
+                min-height: 10vh;
+                max-height: 15vh;
+            }
+
+            .logo-link {
+                font-size: 4vw;
+            }
+
+            .logo-link img {
+                width: 6vw;
+                max-width: 16px;
+                height: 6vw;
+                max-height: 16px;
+            }
+
+            .footer {
+                font-size: 2vw;
+                margin-top: 20px;
+            }
+
+            .loading-text {
+                font-size: 5vw;
+            }
+
+            .loading-bar {
+                width: 80%;
+                height: 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-text">LOADING ZOE OS...</div>
+        <div class="loading-bar">
+            <div class="loading-progress"></div>
+        </div>
+    </div>
+    <div class="container tv-effect" id="mainContent" style="display: none;">
+        <div class="title">ZOE</div>
+        <div class="version">OS v 1.8.2.2.6</div>
+        <img src="zoe-logo.png" alt="ZOE Logo" class="logo">
+        <div class="contract-address">
+            <a href="https://basescan.org/token/#code" target="_blank">Contract Address: 0x...</a>
+        </div>
+        <div class="terminal">
+            <div class="terminal-text" id="terminalText"></div>
+            <span class="cursor"></span>
+        </div>
+        <div class="logo-container">
+            <!-- X Handle -->
+            <a href="https://x.com/zoe_os18226" class="logo-link" target="_blank">X</a>
+            <!-- Web -->
+            <a href="https://zoeos.xyz" class="logo-link" target="_blank">W</a>
+            <!-- GitHub -->
+            <a href="https://github.com/ZoeOSX" class="logo-link" target="_blank">G</a>
+            <!-- CLiza AI -->
+            <a href="https://x.com/ClizaSystems" class="logo-link" target="_blank">by CLIZA</a>
+        </div>
+        <div class="footer">All rights reserved © ZOE OS v 1.8.2.x</div>
+    </div>
+
+    <script>
+        const messages = [
+            "TERMINAL INITIALIZING...",
+            "LOADING ZOE SYSTEM v 1.8.2.2.6...",
+            "CRYPTO CORE ONLINE...",
+            "BASE CHAIN DETECTED...",
+            "LAYER 2 PROTOCOLS ACTIVE...",
+            "INITIALIZING LLM MODULES...",
+            "SWARM INTELLIGENCE BOOTING...",
+            "TUNING NEURAL TRAITS...",
+            "ZOE AI AGENT READY...",
+            "WARNING: MARKET VOLATILITY HIGH...",
+            "ENTER THE CRYPTO VOID...",
+            "LLM OPTIMIZATION IN PROGRESS...",
+            "SWARM NETWORK SYNCING...",
+            "INTELLIGENCE CORE ACTIVATED...",
+            "TRAITS CALIBRATION COMPLETE...",
+            "TUNING ALGORITHMS FOR SPEED...",
+            "BASE CHAIN SCALING DETECTED...",
+            "LAYER 2 EFFICIENCY AT 98%...",
+            "CRYPTO MARKET ANALYSIS LIVE...",
+            "ZOE SWARM MODE ENGAGED...",
+            "INTELLIGENCE TRAITS LOADING...",
+            "LLM PREDICTION ENGINE ONLINE...",
+            "SWARM COLLABORATION ACTIVE...",
+            "TUNING FOR MARKET INSIGHTS...",
+            "BASE CHAIN PERFORMANCE OPTIMAL...",
+            "LAYER 2 PROTOCOLS STABLE...",
+            "CRYPTO DATA STREAMS LIVE...",
+            "ZOE INTELLIGENCE FULLY TUNED...",
+            "SWARM TRAITS SYNCHRONIZED...",
+            "LLM PROCESSING AT MAX SPEED...",
+            "MARKET PREDICTIONS LOADING...",
+            "BASE CHAIN THROUGHPUT HIGH...",
+            "LAYER 2 SCALING SUCCESSFUL...",
+            "CRYPTO CORE FULLY OPERATIONAL...",
+            "ZOE SYSTEM READY FOR DEPLOYMENT...",
+            "SWARM INTELLIGENCE AT PEAK...",
+            "LLM TRAITS FULLY OPTIMIZED...",
+            "TUNING COMPLETE: ZOE ONLINE..."
+        ];
+
+        const terminalText = document.getElementById('terminalText');
+        let currentMessageIndex = 0;
+        let currentCharIndex = 0;
+        let isDeleting = false;
+
+        // Loading screen logic
+        window.onload = function() {
+            setTimeout(() => {
+                document.getElementById('loadingScreen').style.display = 'none';
+                document.getElementById('mainContent').style.display = 'flex';
+                type(); // Start typing animation after loading
+            }, 3000); // Match the loading bar animation duration
+        };
+
+        function type() {
+            const currentMessage = messages[currentMessageIndex];
+            if (!isDeleting) {
+                terminalText.textContent = currentMessage.substring(0, currentCharIndex);
+                currentCharIndex++;
+                if (currentCharIndex > currentMessage.length) {
+                    isDeleting = true;
+                    setTimeout(type, 1000); // Pause before deleting
+                    return;
+                }
+            } else {
+                terminalText.textContent = currentMessage.substring(0, currentCharIndex);
+                currentCharIndex--;
+                if (currentCharIndex < 0) {
+                    isDeleting = false;
+                    currentMessageIndex = (currentMessageIndex + 1) % messages.length;
+                }
+            }
+            setTimeout(type, isDeleting ? 50 : 100);
+        }
+    </script>
+</body>
+</html>
